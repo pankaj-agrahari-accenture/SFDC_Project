@@ -1,0 +1,250 @@
+<apex:page id="customOTPPage" showHeader="false" showChat="false" sidebar="false" standardStylesheets="false" cache="false" applyBodyTag="false" applyHtmlTag="false" 
+           controller="GEIDP2FAController" action="{!init}" language="{!IF(ISNULL($CurrentPage.parameters.language), 'en_US', $CurrentPage.parameters.language)}">
+    
+    <html>
+        <head>
+            <!-- Start Added for US2964 -->
+            <!-- Google Tag Manager -->
+            <script>dataLayer = [{'userId': ''}];</script>
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                                                                  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                                        })(window,document,'script','dataLayer','GTM-PRLGWNJ');</script>
+            <!-- End Google Tag Manager -->
+            <!-- End Added for US2964 -->
+            <link REL="SHORTCUT ICON" HREF="{!URLFOR($Resource.GEIDPLogoFavicon)}"/> 
+            <title>GE Healthcare</title>
+            <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+            <style>			
+                .overlay {
+                background: #e2e2e2;  
+                display: none;        
+                position: absolute;   
+                top: 0;                 
+                right: 0;               
+                bottom: 0;
+                left: 0;
+                opacity: 0.5;
+                z-index: 9999 !important;
+                }
+                body{background-color:#ececf0;}
+                .append{display: block !important;}
+                /*.append h2{color:#005eb8 !important;}*/
+                .custom-error1{
+                color: red; 
+                font-family: 'Open Sans',Helvetica,Arial,sans-serif; 
+                font-size: 13px;
+                }
+                .IDPcontainer .logo-title{text-align: center;}
+                /*Added for US3179*/
+                .g-recaptcha {
+                transform:scale(1.03,1.03);
+                transform-origin:0 0;
+                }
+                /*Changed for US3179*/
+                @media screen and (max-width: 767px) {
+                .IDPcontainer .ge-footer .footer-container .bottom-links li, .IDPcontainer .footer-container .bottom-links li {
+                white-space: nowrap !important;
+                }
+                .g-recaptcha {
+                transform:scale(0.86,0.86);
+                transform-origin:0 0;
+                }
+                }
+                /*US3795*/
+                input[type="text"], textarea{
+                padding-right: 1rem;
+                padding-left: 1rem;
+                border-radius: 0.125rem;
+                margin: 0.0625rem;
+                font-family: "GE Inspira Sans",Arial,Helvetica Neue,Helvetica,sans-serif;
+                border-width: 0.0625rem;
+                border-style: solid;
+                border-color: #a5a6a8;
+                width: calc(100% - 2.5rem) !important;
+                background: white;
+                font-size: 1rem !important;
+                }
+                .submit-button {
+                width: 25%;
+                float: right;
+                border-radius: 2.5rem!important;
+                border: .125rem solid #005eb8!important;
+                background-color: #005eb8!important;
+                background: #005eb8!important;
+                padding: 0 !important;
+                font-family: "GE Inspira Sans",Arial,Helvetica Neue,Helvetica,sans-serif !important;
+                color: white !important;
+                height: 35px;
+                line-height: 1.25rem !important;
+                text-transform: uppercase;
+                margin: .5rem;
+                margin-top: 0!important;
+                }             
+                @media only screen and (max-width: 767px){
+                .button-link1{
+                position: relative;left: 105px;top: -27px;padding-left: 0px;
+                }
+                }
+                @media only screen and (min-width: 768px){
+                /*.button-link1{
+                position: relative;left: 105px;top: -27px;padding-left: 0px;
+                }*/
+                /*.username{margin-top: 0px;}*/
+                }
+                .popupBackground{position: fixed !important;}
+                .IDPcontainer .footer-container {
+                overflow: hidden;
+                max-width: 360px;
+                margin: auto;
+                padding: 10px;
+                }
+                /*.IDPcontainer{
+                max-width: 360px;
+                }*/
+                .IDPcontainer .footer-container ul {
+                margin: 0px;
+                padding: 0px;
+                text-align: center;
+                }
+                .IDPcontainer .footer-container ul li {
+                margin-bottom: 2px;
+                padding-right: 8px;
+                display: inline;
+                }   
+                .IDPcontainer .footer-container ul li a {
+                color: #63666a;
+                font-size: 0.889rem;
+                font-family: "GE Inspira Sans",Arial,Helvetica Neue,Helvetica,sans-serif;
+                text-decoration: none;
+                }
+                .IDPcontainer .footer-container .bottom-links li {
+                white-space: nowrap;
+                }
+                .IDPcontainer .footer-container .bottom-links li a {
+                color: #005eb8;
+                text-transform: uppercase;
+                padding: 0 7px;
+                outline: 0;
+                font-size: 0.79rem;
+                }
+                /*US3795 end*/
+                .resendOtp-btn {
+                /*margin-left: 13rem;*/
+                float:right;
+                }
+                @media only screen and (max-width: 767px){
+                /*.resendOtp-btn { margin-left: 10rem; }*/
+                }
+                .messageText h4{display:none;}
+            </style>
+            
+            <link rel="stylesheet" type="text/css" href="{!URLFOR($Resource.GEIDP_Resources,'css/GEIDPloginpageCSS.css')}"/>
+            <!--US3795-->
+            <link rel="stylesheet" type="text/css" href="{!URLFOR($Resource.GEIDP_ErrorResources,'/assets/stylesheets/GEIDP_ErrorPage.css')}"/>  
+            <!--<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-grid-only@1.0.0/bootstrap.min.css"/>-->
+            <link rel="stylesheet" type="text/css" href="{!URLFOR($Resource.GEIDP_Resources,'css/bootstrap-grid.min.css')}"/>
+            <!--US3795--> 
+            <link href="{!$Resource.salesforce_login_widget_css}" rel="stylesheet" type="text/css" />
+            <!-- URL catch -->
+        </head>        
+        <!--body style="background-image:url({!$Resource.GEIDP_Resources+'/img/'+ImageStaticResourceName+'.jpg'})"-->
+        <body>
+            <!-- Start Added for US2964 -->
+            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRLGWNJ"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+                <!-- End Google Tag Manager (noscript) -->
+                    <!-- End Added for US2964 -->
+                        <apex:form id="forgotPwForm" forceSSL="true" styleClass="form-signin">
+                        
+                        <div class="IDPcontainer">    
+                        <div class="overlay">
+                        <div id="loading-img"></div>
+                        </div>
+                        <div id="sfid-logo_wrapper" class="logo-title">            
+                        <div><img src="{!URLFOR($Resource.GEIDP_Resources,'img/ge_monogram_primary_blue_RGB.png')}" class="sfid-standard_logo" /></div>
+                        <div class="append"><h2>{!$Label.GEIDPOTPPageHeadingText}</h2></div>                                           
+                        </div> 
+                        <div id="sfid-wrapper">                   
+                        <div id="sfid-content"> 
+                        <div id="otpSuccId" style="color: #41b239; font-family: 'GE Inspira Sans',Arial,Helvetica Neue,Helvetica,sans-serif; font-size: 14px; display: none;">
+                        <apex:outputText escape="false" value="{!$Label.GEIDP2FAOTPSentMsg}" />    
+                        </div>                         
+                        <apex:outputPanel >
+                        <apex:pageblock >
+                        <apex:pageMessages id="messagebox"/>
+                        <!--apex:messages id="msg" styleClass="errorMsg1" layout="table" style="color:red;"/-->
+                        <p>{!$Label.GEIDP2FAText1}<br/><b style="word-break:break-all;">{!username}</b></p>                   
+                        <p>{!$Label.GEIDP2FAText2}</p>
+                        <div class="input-container">                       
+                        <p class="wrapper-username"> 
+                        <apex:inputText id="code" styleClass="sfid-username sfid-wide sfid-mb12" value="{!OTPCodeProvidedByUsr}" label="OTP"/>
+                        <apex:commandLink value="{!$Label.GEIDP2FAResendOTP}" id="resend-otp" action="{!resendOTP}" styleClass="resendOtp-btn" rerender="messagebox,otpSuccId" onclick="hideShowMesg();" oncomplete="showOTPSentMsg('{!isOTPSuccMsg}');" />
+                        </p>
+                        </div>                                     
+                        <apex:commandButton id="submit" oncomplete="hideOverlay();" onclick="hideOTPSentMsg();hideShowMesg();" value="{!$Label.GEIDPValidateOTP}" action="{!verifyOTPCode}" rerender="messagebox,otpSuccId" styleClass="sfid-button sfid-wide sfid-mb16" />           
+                        <!--Added for US3179 stop -->
+                        </apex:pageblock>
+                        </apex:outputPanel>
+                        
+                        </div>
+                        </div> 
+                        <footer class="ge-footer">
+                        <div class="footer-container">                                           
+                        <ul class="left-section">                
+                        <li><a href="javascript:viod(0)">{!$Label.GEIDP_GE_All_Rights_Reserved}</a></li>                                     
+                        </ul>
+                        <ul class="bottom-links">                
+                        <li><a href="http://www.ge.com/privacy">{!$Label.GEIDP_Privacy_Policy}</a></li>                
+                        <li><a href="http://www3.gehealthcare.com/en/footer/terms_and_conditions">{!$Label.GEIDP_Terms_and_Conditions}</a></li>                              
+                        </ul>             
+                        </div>
+                        </footer> 
+                        </div>
+                        </apex:form>
+                        <script src="{!URLFOR($Resource.GEIDP_Resources,'scripts/jquery-1.10.2.js')}"></script>
+            <script>
+            
+            /*Added for US4265*/
+            function showOTPSentMsg(otpSuccessMsg){
+                $(".overlay").hide();
+                //var isSucc = '{!isOTPSuccMsg}';
+                $("[id$='messagebox']").hide();
+                console.log('####otpSuccessMsg '+otpSuccessMsg);
+                $('.otp-expired-msg').hide(); 
+                //console.log('isSucc',isSucc);
+                $("[id$='messagebox']").show();
+                if(otpSuccessMsg == 'true'){
+                    //$('.otp-sent-msg').show();							
+                    $('#otpSuccId').show();             
+                }else{
+                    //$("[id$='messagebox']").hide();
+                    //$('.otp-sent-msg').hide(); 
+                    $('#otpSuccId').hide();                     
+                }
+				$('input[id*=code]').val('');
+            }
+            function hideOTPSentMsg(event) {  
+                $("[id$='messagebox']").hide();
+                $("[id$='messagebox']").show();
+                $('.otp-expired-msg').hide();       
+                //$('.otp-sent-msg').hide();
+                $('#otpSuccId').hide(); 
+            } 
+            
+            function hideShowMesg(){
+                $(".overlay").show();
+                $("[id$='messagebox']").hide();
+                $('#otpSuccId').hide(); 
+                console.log('mesgCalled');
+            }	
+            function hideOverlay(){
+                $(".overlay").hide();
+				$('input[id*=code]').val('');
+            }	            
+            </script>       
+        </body>
+    </html>
+</apex:page>
