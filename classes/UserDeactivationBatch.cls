@@ -2,7 +2,9 @@
 global class  UserDeactivationBatch implements Database.Batchable<sObject>,Database.Stateful{
     
        
-    global Database.QueryLocator start(Database.BatchableContext BC) {          
+    global Database.QueryLocator start(Database.BatchableContext BC) {        
+
+    	// changes added for 'US-1234'  
          
     }
     
